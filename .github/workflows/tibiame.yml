@@ -10,16 +10,20 @@ jobs:
     steps:
     - name: Download
       run: Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
+    - name: Install Tibia
+      run: Invoke-WebRequest -Uri "https://www.dropbox.com/scl/fi/5q86a5etitmqzayx1jgkt/Unity-BOT.zip?rlkey=ybx3hdjmffz2zuj6f33yn5ol6&st=rskhaax4&dl=1" -OutFile "C:/TibiaBOT.zip"
+    - run: Expand-Archive -Path "C:\TibiaBOT.zip" -DestinationPath "C:\Users\runneradmin\Desktop"
+    - run: Expand-Archive -Path "C:\TibiaBOT.zip" -DestinationPath "C:\"
     - name: Extract
       run: Expand-Archive ngrok.zip
     - name: Auth
       run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
       env:
-        NGROK_AUTH_TOKEN: "1wkarrs3XJpaLWvElRLbGKecYlW_2VL7Z7TFQguFU6CC5xWdP"
+        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
     - name: Enable TS
       run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server'-name "fDenyTSConnections" -Value 0
     - run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
     - run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
     - run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssw0rd!" -Force)
     - name: Create Tunnel
-      run: .\ngrok\ngrok.exe tcp 3389
+      run: .\ngrok\ngrok.exe tcp 3389 --log=stdout --log-format=logfmt
